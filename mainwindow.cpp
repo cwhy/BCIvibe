@@ -21,34 +21,32 @@ void MainWindow::setupDemo()
 {
     signalRange = 20;
     channelNames << "Channel 1" << "Channel 2" << "Channel 3" << "Channel 4"
-                 << "Channel 1" << "Channel 2" << "Channel 3" << "Channel 4"
-                 << "Channel 1" << "Channel 2" << "Channel 3" << "Channel 4"
-                 << "Channel 1" << "Channel 2" << "Channel 3" << "Channel 4";
+                 << "Channel 5";
     N_ch = channelNames.length();
-    setupSignalPlots(ui->customPlot);
+    setupSignalPlots(ui->signalPlot);
     qRegisterMetaType<vrpn_ANALOGCB>("vrpn_ANALOGCB");
     connect(vibe, SIGNAL(gotAnalog(vrpn_ANALOGCB)), this, SLOT(signalPlotSlot(vrpn_ANALOGCB)));
 
     setWindowTitle("BCIvibe: "+demoName);
     statusBar()->clearMessage();
-    ui->customPlot->replot();
+    ui->signalPlot->replot();
 }
 
-void MainWindow::setupSignalPlots(QCustomPlot *customPlot)
+void MainWindow::setupSignalPlots(QCustomPlot *signalPlot)
 {
     colours << QColor("cyan") << QColor("magenta") << QColor("red") <<
                QColor("darkRed") << QColor("darkCyan") << QColor("darkMagenta") <<
                QColor("green") << QColor("darkGreen") << QColor("yellow") <<
                QColor("blue");
-    customPlot->plotLayout()->clear();
+    signalPlot->plotLayout()->clear();
     for (int i=0;i<N_ch;i++)
     {
-        QCPAxisRect *tmpRect = new QCPAxisRect(customPlot);
+        QCPAxisRect *tmpRect = new QCPAxisRect(signalPlot);
         QCPGraph *tmpL;
         QCPGraph *tmpD;
         QColor tmpC;
-        customPlot->plotLayout()->addElement(i, 0, tmpRect);
-        //customPlot->plotLayout()->setRowStretchFactor(0, 1);
+        signalPlot->plotLayout()->addElement(i, 0, tmpRect);
+        //signalPlot->plotLayout()->setRowStretchFactor(0, 1);
         tmpRect->axis(QCPAxis::atBottom)->setVisible(false);
         tmpRect->axis(QCPAxis::atLeft)->setRange(0, 1);
         tmpRect->setAutoMargins(QCP::msLeft|QCP::msBottom|QCP::msTop);
@@ -66,9 +64,9 @@ void MainWindow::setupSignalPlots(QCustomPlot *customPlot)
         }
         tmpC = colours[i % 10];
 
-        tmpL = customPlot->addGraph(tmpRect->axis(QCPAxis::atBottom), tmpRect->axis(QCPAxis::atLeft));
+        tmpL = signalPlot->addGraph(tmpRect->axis(QCPAxis::atBottom), tmpRect->axis(QCPAxis::atLeft));
         tmpL->setPen(QPen(tmpC.darker(200)));
-        tmpD = customPlot->addGraph(tmpRect->axis(QCPAxis::atBottom), tmpRect->axis(QCPAxis::atLeft));
+        tmpD = signalPlot->addGraph(tmpRect->axis(QCPAxis::atBottom), tmpRect->axis(QCPAxis::atLeft));
 
         tmpD->setPen(QPen(Qt::black));
         tmpD->setLineStyle(QCPGraph::lsNone);
@@ -103,7 +101,7 @@ void MainWindow::signalPlotSlot(vrpn_ANALOGCB chData)
         {
             axes[i]->axis(QCPAxis::atBottom)->setRange(key+0.5, signalRange, Qt::AlignRight);
         }
-        ui->customPlot->replot();
+        ui->signalPlot->replot();
         lastPointKey = key;
     }
     // make key axis range scroll with the data (at a constant range size of signalRange):
@@ -140,5 +138,3 @@ MainWindow::~MainWindow()
     delete vibe;
     delete ui;
 }
-
-
