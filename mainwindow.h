@@ -5,6 +5,7 @@
 #include <QTimer>
 #include "qcustomplot/qcustomplot.h"
 #include "vibe.h"
+#include "signalplot.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,25 +20,12 @@ public:
     ~MainWindow();
 
     void setupDemo();
-    void setupSignalPlots(QCustomPlot *customPlot);
-
-
-private slots:
-    void signalPlotSlot(vrpn_ANALOGCB);
 
 private:
     Ui::MainWindow *ui;
     QString demoName;
     Vibe* vibe;
-
-    double signalRange;
-    QList<QCPAxisRect*> axes;
-    QList<QCPGraph*> lines;
-    QList<QCPGraph*> leadDots;
-    QList<QString> channelNames;
-    int N_ch;
-
-    QList<QColor> colours;
+    SignalPlot* signalplot;
 
     void mouseDoubleClickEvent(QMouseEvent *e);
 
