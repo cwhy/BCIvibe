@@ -8,7 +8,8 @@ SOURCES += main.cpp \
     mainwindow.cpp \
     qcustomplot/qcustomplot.cpp \
     vibe.cpp \
-    signalplot.cpp
+    signalplot.cpp \
+    thermometer.cpp
 
 INCLUDEPATH += $$PWD/vrpn/include
 DEPENDPATH += $$PWD/vrpn/include
@@ -21,7 +22,8 @@ HEADERS += \
     mainwindow.h \
     qcustomplot/qcustomplot.h \
     vibe.h \
-    signalplot.h
+    signalplot.h \
+    thermometer.h
 
 FORMS += \
     mainwindow.ui

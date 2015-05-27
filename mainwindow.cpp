@@ -18,11 +18,13 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::setupDemo()
 {
     // setupSignalPlots(ui->signalPlot);
-    signalplot = new SignalPlot(ui->signalPlot);
+    signalPlot = new SignalPlot(ui->signalPlot);
+    thermPlot = new Thermometer(ui->thermPlot);
 
     setWindowTitle("BCIvibe: "+demoName);
     statusBar()->clearMessage();
     ui->signalPlot->replot();
+    ui->thermPlot->replot();
 }
 
 
@@ -39,8 +41,10 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *e)
 
 MainWindow::~MainWindow()
 {
-    vibe->exit();
-    delete vibe;
+    signalPlot->stopVibe();
+    thermPlot->stopVibe();
+    delete signalPlot;
+    delete thermPlot;
     delete ui;
 }
 

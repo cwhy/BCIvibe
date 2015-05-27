@@ -13,12 +13,13 @@ void VRPN_CALLBACK Vibe::handleAnalog(vrpn_ANALOGCB analog){
     emit gotAnalog(analog);
 }
 
-Vibe::Vibe(QString VibeHostName)
+Vibe::Vibe(QString VibeHostName, int _bufferSize)
 {
-    bufferSize = 4;
+    bufferSize = _bufferSize;
     /* Binding of the VRPN Analog to a callback */
     VRPNAnalog = new vrpn_Analog_Remote( VibeHostName.toStdString().c_str() );
     VRPNAnalog->register_change_handler( this, vrpn_analog_callback_stub );
+    qRegisterMetaType<vrpn_ANALOGCB>("vrpn_ANALOGCB");
     qDebug() << " :.|";
 }
 

@@ -6,6 +6,7 @@
 #include "qcustomplot/qcustomplot.h"
 #include "vibe.h"
 #include "signalplot.h"
+#include "thermometer.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,8 +25,8 @@ public:
 private:
     Ui::MainWindow *ui;
     QString demoName;
-    Vibe* vibe;
-    SignalPlot* signalplot;
+    SignalPlot* signalPlot;
+    Thermometer* thermPlot;
 
     void mouseDoubleClickEvent(QMouseEvent *e);
 

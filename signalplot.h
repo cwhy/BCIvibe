@@ -9,25 +9,25 @@ class SignalPlot : public QObject
 {
     Q_OBJECT
 
-    public:
-        explicit SignalPlot(QCustomPlot *uiSignalPlot);
+public:
+    explicit SignalPlot(QCustomPlot *uiSignalPlot);
+    void stopVibe();
 
-    private slots:
-        void signalPlotSlot(vrpn_ANALOGCB);
+private slots:
+    void signalPlotSlot(vrpn_ANALOGCB);
 
-    private:
+private:
+    Vibe* vibe;
+    QCustomPlot *uiSignalPlot;
+    double signalRange;
+    QList<QCPAxisRect*> axes;
+    QList<QCPGraph*> lines;
+    QList<QCPGraph*> leadDots;
+    QList<QString> channelNames;
+    int N_ch;
+    double lastKey;
 
-        Vibe* vibe;
-        QCustomPlot *uiSignalPlot;
-        double signalRange;
-        QList<QCPAxisRect*> axes;
-        QList<QCPGraph*> lines;
-        QList<QCPGraph*> leadDots;
-        QList<QString> channelNames;
-        int N_ch;
-        double lastKey;
-
-        QList<QColor> colours;
+    QList<QColor> colours;
 };
 
 #endif // SIGNALPLOT_H

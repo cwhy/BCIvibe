@@ -3,7 +3,7 @@
 
 SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
 {
-    vibe = new Vibe("Sinus@localhost");
+    vibe = new Vibe("Sinus@localhost", 8);
     vibe->start();
     uiSignalPlot = _uiSignalPlot;
 
@@ -58,7 +58,6 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
     axes.last()->axis(QCPAxis::atBottom)->setTickStep(2);
     axes.last()->axis(QCPAxis::atBottom)->setVisible(true);
 
-    qRegisterMetaType<vrpn_ANALOGCB>("vrpn_ANALOGCB");
     lastKey = 0;
     connect(vibe, SIGNAL(gotAnalog(vrpn_ANALOGCB)), this, SLOT(signalPlotSlot(vrpn_ANALOGCB)));
 }
@@ -79,11 +78,15 @@ void SignalPlot::signalPlotSlot(vrpn_ANALOGCB chData)
         }
         for (int i=0;i<N_ch;i++)
         {
+    // make key axis range scroll with the data (at a constant range size of signalRange):
             axes[i]->axis(QCPAxis::atBottom)->setRange(key+0.5, signalRange, Qt::AlignRight);
         }
         uiSignalPlot->replot();
         lastKey = key;
     }
-    // make key axis range scroll with the data (at a constant range size of signalRange):
 
+}
+
+void SignalPlot::stopVibe(){
+    vibe->quit();
 }

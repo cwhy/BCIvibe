@@ -14,7 +14,7 @@ protected:
     void run();
 
 public:
-    Vibe(QString VibeHostName);
+    Vibe(QString VibeHostName, int _bufferSize);
     vrpn_Analog_Remote* VRPNAnalog;
     void VRPN_CALLBACK handleAnalog(vrpn_ANALOGCB analog);
     int bufferSize;
