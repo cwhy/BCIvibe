@@ -5,18 +5,20 @@ Thermometer::Thermometer(QCustomPlot *_uiThermometer)
 {
     vibe = new Vibe("therm@localhost", 1);
     vibe->start();
-    ymax = 0;
-    ymin = 7;
+    yRange = QCPRange(0, 1);
     uiThermometer = _uiThermometer;
     // uiThermometer->plotLayout()->clear();
     therm = new QCPBars(uiThermometer->xAxis, uiThermometer->yAxis);
+    colorMap = new QCPColorGradient(QCPColorGradient::gpJet);
+
     uiThermometer->addPlottable(therm);
     QPen pen;
     pen.setWidthF(1.2);
-    therm->setName("Workload Indicator");
-    pen.setColor(QColor(150, 222, 0));
+    pen.setColor(QColor(0, 0, 0, 0));
     therm->setPen(pen);
-    therm->setBrush(QColor(150, 222, 0, 70));
+
+    therm->setName("Workload Indicator");
+    therm->setBrush(Qt::white);
     ticks << 1;
     tickLabels << "Workload";
     uiThermometer->xAxis->setAutoTicks(false);
@@ -29,7 +31,7 @@ Thermometer::Thermometer(QCustomPlot *_uiThermometer)
     uiThermometer->xAxis->grid()->setVisible(true);
     uiThermometer->xAxis->setRange(0, 2);
 
-    uiThermometer->yAxis->setRange(ymin, ymax);
+    uiThermometer->yAxis->setRange(yRange);
     uiThermometer->yAxis->setPadding(5); // a bit more space to the left border
     uiThermometer->yAxis->setLabel("Workload");
     uiThermometer->yAxis->grid()->setSubGridVisible(true);
@@ -42,19 +44,19 @@ void Thermometer::thermometerSlot(vrpn_ANALOGCB chData)
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     if (key-lastKey > 0.02) // at most add point every 10 ms
     {
-        int i = 0;
-        double value = chData.channel[i];
+        double value = chData.channel[0];
         QVector<double> values;
         values << value;
-        uiThermometer->replot();
-        lastKey = key;
         therm->setData(ticks, values);
+        therm->setBrush(QBrush(colorMap->color(value, yRange)));
 
         lastKey = key;
+        uiThermometer->replot();
     }
-    uiThermometer->replot();
 }
 
 void Thermometer::stopVibe(){
+    vibe->stop();
     vibe->quit();
+    delete vibe;
 }

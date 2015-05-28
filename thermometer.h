@@ -13,6 +13,7 @@ public:
     explicit Thermometer(QCustomPlot *uiThermometer);
     void stopVibe();
 
+
 private slots:
     void thermometerSlot(vrpn_ANALOGCB);
 
@@ -21,11 +22,11 @@ private:
     QCustomPlot* uiThermometer;
     QCPBars* therm;
     double lastKey;
-    double ymax;
-    double ymin;
+    QCPRange yRange;
 
     QVector<double> ticks;
     QVector<QString> tickLabels;
+    QCPColorGradient *colorMap;
 };
 
 #endif // THERMOMETER_H

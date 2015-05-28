@@ -16,6 +16,7 @@ void VRPN_CALLBACK Vibe::handleAnalog(vrpn_ANALOGCB analog){
 Vibe::Vibe(QString VibeHostName, int _bufferSize)
 {
     bufferSize = _bufferSize;
+    toStop = false;
     /* Binding of the VRPN Analog to a callback */
     VRPNAnalog = new vrpn_Analog_Remote( VibeHostName.toStdString().c_str() );
     VRPNAnalog->register_change_handler( this, vrpn_analog_callback_stub );
@@ -23,8 +24,20 @@ Vibe::Vibe(QString VibeHostName, int _bufferSize)
     qDebug() << " :.|";
 }
 
-void Vibe::run(){
+void Vibe::run()
+{
     while(true){
-       VRPNAnalog->mainloop();
+        {
+            QMutexLocker locker(&mutex);
+            if (toStop) break;
+        }
+        VRPNAnalog->mainloop();
     }
+}
+
+void Vibe::stop()
+{
+    qDebug() << " :-/";
+    QMutexLocker locker(&mutex);
+    toStop=true;
 }

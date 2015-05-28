@@ -8,8 +8,8 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
     uiSignalPlot = _uiSignalPlot;
 
     signalRange = 20;
-    channelNames << "Channel 1" << "Channel 2" << "Channel 3" << "Channel 4"
-                 << "Channel 5";
+    channelNames << "F3" << "F4" << "C3" << "C4" << "P3" << "P4"
+                 << "O1" << "O2";
     N_ch = channelNames.length();
     colours << QColor("cyan") << QColor("magenta") << QColor("red") <<
                QColor("darkRed") << QColor("darkCyan") << QColor("darkMagenta") <<
@@ -88,5 +88,7 @@ void SignalPlot::signalPlotSlot(vrpn_ANALOGCB chData)
 }
 
 void SignalPlot::stopVibe(){
+    vibe->stop();
     vibe->quit();
+    delete vibe;
 }

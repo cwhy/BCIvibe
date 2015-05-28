@@ -22,6 +22,9 @@ public:
 
     void setupDemo();
 
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private:
     Ui::MainWindow *ui;
     QString demoName;

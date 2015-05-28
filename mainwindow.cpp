@@ -41,11 +41,13 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *e)
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
     signalPlot->stopVibe();
     thermPlot->stopVibe();
-    delete signalPlot;
-    delete thermPlot;
-    delete ui;
+    event->accept();
 }
 
     // calculate frames per second:

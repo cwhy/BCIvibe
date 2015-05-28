@@ -15,14 +15,18 @@ protected:
 
 public:
     Vibe(QString VibeHostName, int _bufferSize);
-    vrpn_Analog_Remote* VRPNAnalog;
     void VRPN_CALLBACK handleAnalog(vrpn_ANALOGCB analog);
     int bufferSize;
+    void stop();
 
 signals:
     void gotAnalog(vrpn_ANALOGCB);
 
 public slots:
+private:
+    vrpn_Analog_Remote* VRPNAnalog;
+    QMutex mutex;
+    bool toStop;
 };
 
 #endif // VIBE_H
