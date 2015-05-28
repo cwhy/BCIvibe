@@ -21,11 +21,13 @@ private:
     QCustomPlot *uiSignalPlot;
     double signalRange;
     QList<QCPAxisRect*> axes;
+    QCPAxisRect* timeAxis;
     QList<QCPGraph*> lines;
     QList<QCPGraph*> leadDots;
     QList<QString> channelNames;
     int N_ch;
     double lastKey;
+    void setupPlot();
 
     QList<QColor> colours;
 };

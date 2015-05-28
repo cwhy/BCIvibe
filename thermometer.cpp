@@ -28,7 +28,7 @@ Thermometer::Thermometer(QCustomPlot *_uiThermometer)
 //   uiThermometer->xAxis->setTickLabelRotation(60);
     uiThermometer->xAxis->setSubTickCount(0);
     uiThermometer->xAxis->setTickLength(0, 4);
-    uiThermometer->xAxis->grid()->setVisible(true);
+    uiThermometer->xAxis->grid()->setVisible(false);
     uiThermometer->xAxis->setRange(0, 2);
 
     uiThermometer->yAxis->setRange(yRange);

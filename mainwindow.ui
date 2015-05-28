@@ -20,10 +20,24 @@
    <string notr="true">background-color:white;</string>
   </property>
   <widget class="QWidget" name="centralWidget">
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>11</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>9</number>
+    </property>
+    <property name="topMargin">
+     <number>9</number>
+    </property>
     <item row="0" column="0">
      <widget class="QCustomPlot" name="signalPlot" native="true">
       <property name="enabled">
@@ -35,12 +49,8 @@
         <height>540</height>
        </size>
       </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>8</pointsize>
-        <stylestrategy>PreferAntialias</stylestrategy>
-       </font>
+      <property name="styleSheet">
+       <string notr="true"/>
       </property>
      </widget>
     </item>

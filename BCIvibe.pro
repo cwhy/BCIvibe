@@ -20,15 +20,15 @@ CONFIG += console \
 
 HEADERS += \
     mainwindow.h \
+    ui_mainwindow.h \
     qcustomplot/qcustomplot.h \
     vibe.h \
     signalplot.h \
     thermometer.h
 
-FORMS += \
-    mainwindow.ui
+#FORMS += \
+#    mainwindow.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/vrpn/ -lvrpn
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/vrpn/ -lvrpnd
-

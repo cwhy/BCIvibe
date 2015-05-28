@@ -11,11 +11,21 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
     channelNames << "F3" << "F4" << "C3" << "C4" << "P3" << "P4"
                  << "O1" << "O2";
     N_ch = channelNames.length();
+
     colours << QColor("cyan") << QColor("magenta") << QColor("red") <<
                QColor("darkRed") << QColor("darkCyan") << QColor("darkMagenta") <<
                QColor("green") << QColor("darkGreen") << QColor("yellow") <<
                QColor("blue");
+    setupPlot();
+
+    lastKey = 0;
+    connect(vibe, SIGNAL(gotAnalog(vrpn_ANALOGCB)), this, SLOT(signalPlotSlot(vrpn_ANALOGCB)));
+}
+
+void SignalPlot::setupPlot()
+{
     uiSignalPlot->plotLayout()->clear();
+    QCPMarginGroup * marginGroup = new QCPMarginGroup(uiSignalPlot);
     for (int i=0;i<N_ch;i++)
     {
         QCPAxisRect *tmpRect = new QCPAxisRect(uiSignalPlot);
@@ -23,10 +33,13 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
         QCPGraph *tmpD;
         QColor tmpC;
         uiSignalPlot->plotLayout()->addElement(i, 0, tmpRect);
-        //uiSignalPlot->plotLayout()->setRowStretchFactor(0, 1);
+        uiSignalPlot->plotLayout()->setRowStretchFactor(i, 2);
         tmpRect->axis(QCPAxis::atBottom)->setVisible(false);
-        tmpRect->axis(QCPAxis::atLeft)->setRange(0, 1);
-        tmpRect->setAutoMargins(QCP::msLeft|QCP::msBottom|QCP::msTop);
+        // tmpRect->axis(QCPAxis::atLeft)->setVisible(true);
+        // tmpRect->axis(QCPAxis::atLeft)->setRange(0, 1);
+        // tmpRect->setAutoMargins(QCP::msLeft|QCP::msBottom|QCP::msTop);
+        tmpRect->setMarginGroup(QCP::msLeft|QCP::msRight, marginGroup);
+        tmpRect->setAutoMargins(QCP::msLeft);
         tmpRect->setMargins(QMargins(0, 0, 0, 0));
         // tmpRect->setupFullAxesBox();
         // connect(tmpRect->axis(QCPAxis::atBottom), SIGNAL(rangeChanged(QCPRange)),
@@ -34,6 +47,11 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
         // connect(tmpRect->axis(QCPAxis::atLeft), SIGNAL(rangeChanged(QCPRange)),
         //         tmpRect->axis(QCPAxis::atRight), SLOT(setRange(QCPRange)));
 
+        tmpRect->axis(QCPAxis::atLeft)->setTickLabels(false);
+        tmpRect->axis(QCPAxis::atLeft)->setSubTickPen(Qt::NoPen);
+        tmpRect->axis(QCPAxis::atLeft)->setAutoTickCount(2);
+        tmpRect->axis(QCPAxis::atLeft)->setLabel(channelNames[i]);
+        tmpRect->axis(QCPAxis::atLeft)->setTickLength(0, 3);
         foreach(QCPAxis *axis, tmpRect->axes())
         {
             axis->setLayer("axes");
@@ -52,14 +70,22 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
         lines << tmpL;
         leadDots << tmpD;
     }
-    axes.last()->axis(QCPAxis::atBottom)->setTickLabelType(QCPAxis::ltDateTime);
-    axes.last()->axis(QCPAxis::atBottom)->setDateTimeFormat("hh:mm:ss");
-    axes.last()->axis(QCPAxis::atBottom)->setAutoTickStep(false);
-    axes.last()->axis(QCPAxis::atBottom)->setTickStep(2);
-    axes.last()->axis(QCPAxis::atBottom)->setVisible(true);
-
-    lastKey = 0;
-    connect(vibe, SIGNAL(gotAnalog(vrpn_ANALOGCB)), this, SLOT(signalPlotSlot(vrpn_ANALOGCB)));
+    QCPAxisRect *tmpRect = new QCPAxisRect(uiSignalPlot);
+    uiSignalPlot->plotLayout()->addElement(N_ch, 0, tmpRect);
+    uiSignalPlot->plotLayout()->setRowStretchFactor(N_ch, 1);
+    tmpRect->axis(QCPAxis::atBottom)->setTickLabelType(QCPAxis::ltDateTime);
+    tmpRect->axis(QCPAxis::atBottom)->setDateTimeFormat("hh:mm:ss");
+    tmpRect->axis(QCPAxis::atBottom)->setAutoTickStep(false);
+    tmpRect->axis(QCPAxis::atBottom)->setTickStep(2);
+    tmpRect->axis(QCPAxis::atBottom)->setTickLength(0, 3);
+    tmpRect->axis(QCPAxis::atBottom)->setVisible(true);
+    tmpRect->axis(QCPAxis::atBottom)->setSubTickPen(Qt::NoPen);
+    tmpRect->axis(QCPAxis::atLeft)->setVisible(false);
+    tmpRect->axis(QCPAxis::atBottom)->grid()->setPen(Qt::NoPen);
+    tmpRect->setMinimumSize(100, 30);
+    tmpRect->setMarginGroup(QCP::msLeft|QCP::msRight, marginGroup);
+    tmpRect->setAutoMargins(QCP::msLeft|QCP::msBottom);
+    timeAxis = tmpRect;
 }
 
 void SignalPlot::signalPlotSlot(vrpn_ANALOGCB chData)
@@ -75,12 +101,10 @@ void SignalPlot::signalPlotSlot(vrpn_ANALOGCB chData)
             lines[i]->rescaleValueAxis(false);
             leadDots[i]->clearData();
             leadDots[i]->addData(key, value);
-        }
-        for (int i=0;i<N_ch;i++)
-        {
-    // make key axis range scroll with the data (at a constant range size of signalRange):
             axes[i]->axis(QCPAxis::atBottom)->setRange(key+0.5, signalRange, Qt::AlignRight);
         }
+    // make key axis range scroll with the data (at a constant range size of signalRange):
+        timeAxis->axis(QCPAxis::atBottom)->setRange(key+0.5, signalRange, Qt::AlignRight);
         uiSignalPlot->replot();
         lastKey = key;
     }
