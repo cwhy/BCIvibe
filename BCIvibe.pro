@@ -24,7 +24,8 @@ HEADERS += \
     qcustomplot/qcustomplot.h \
     vibe.h \
     signalplot.h \
-    thermometer.h
+    thermometer.h \
+    channellocation.h
 
 #FORMS += \
 #    mainwindow.ui
