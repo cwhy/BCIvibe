@@ -1,7 +1,6 @@
 #ifndef THERMOMETER_H
 #define THERMOMETER_H
 #include "qcustomplot/qcustomplot.h"
-#include "vibe.h"
 
 #include <QObject>
 
@@ -11,14 +10,11 @@ class Thermometer : public QObject
 
 public:
     explicit Thermometer(QCustomPlot *uiThermometer);
-    void stopVibe();
-
 
 private slots:
-    void thermometerSlot(vrpn_ANALOGCB);
+    void thermometerSlot(double metric);
 
 private:
-    Vibe* vibe;
     QCustomPlot* uiThermometer;
     QCPBars* therm;
     double lastKey;

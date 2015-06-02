@@ -1,8 +1,8 @@
 #ifndef SIGNALPLOT_H
 #define SIGNALPLOT_H
-#include "qcustomplot/qcustomplot.h"
-#include "vibe.h"
+
 #include <QObject>
+#include "qcustomplot/qcustomplot.h"
 
 
 class SignalPlot : public QObject
@@ -11,15 +11,13 @@ class SignalPlot : public QObject
 
 public:
     explicit SignalPlot(QCustomPlot *uiSignalPlot);
-    void stopVibe();
 
 private slots:
-    void signalPlotSlot(vrpn_ANALOGCB);
+    void signalPlotSlot(double* chData);
 
 private:
-    Vibe* vibe;
     QCustomPlot *uiSignalPlot;
-    double signalRange;
+    double timeRange;
     QList<QCPAxisRect*> axes;
     QCPAxisRect* timeAxis;
     QList<QCPGraph*> lines;

@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QMetaEnum>
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -17,14 +18,27 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::setupDemo()
 {
-    // setupSignalPlots(ui->signalPlot);
-    signalPlot = new SignalPlot(ui->signalPlot);
-    thermPlot = new Thermometer(ui->thermPlot);
 
     setWindowTitle("BCIvibe: "+demoName);
-    statusBar()->clearMessage();
+
+    // Set up VRPN connections
+    signalPort = new Vibe("Sinus@localhost", 8);
+    signalPort->start();
+
+    metricPort = new Vibe("therm@localhost", 1);
+    metricPort->start();
+
+    // Connection VRPNsignals to GUI plots
+    signalPlot = new SignalPlot(ui->signalPlot);
+    thermPlot = new Thermometer(ui->thermPlot);
+    metricPlot = new MetricPlot(ui->metricPlot);
+    connect(signalPort, SIGNAL(gotSignal(double*)), signalPlot, SLOT(signalPlotSlot(double*)));
+    connect(metricPort, SIGNAL(gotMetric(double)), thermPlot, SLOT(thermometerSlot(double)));
+    connect(metricPort, SIGNAL(gotMetric(double)), metricPlot, SLOT(metricPlotSlot(double)));
+
     ui->signalPlot->replot();
     ui->thermPlot->replot();
+    ui->metricPlot->replot();
 }
 
 
@@ -45,21 +59,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    signalPlot->stopVibe();
-    thermPlot->stopVibe();
+    signalPort->terminate(); // VRPN is a blocking API!!
+    metricPort->terminate(); // VRPN is a blocking API!!
     event->accept();
 }
-
-    // calculate frames per second:
-//    static double lastFpsKey;
-//    static int frameCount;
-//    ++frameCount;
-//    if (key-lastFpsKey > 2) // average fps over 2 seconds
-//    {
-//        ui->statusBar->showMessage(
-//                    QString("%1 FPS, Total Data points:")
-//                    .arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
-//                    , 0);
-//        lastFpsKey = key;
-//        frameCount = 0;
-//    }

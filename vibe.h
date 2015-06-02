@@ -1,9 +1,9 @@
 #ifndef VIBE_H
 #define VIBE_H
 
-#include <vrpn_Analog.h>
 #include <QObject>
 #include <QThread>
+#include <vrpn_Analog.h>
 
 
 class Vibe : public QThread
@@ -15,18 +15,17 @@ protected:
 
 public:
     Vibe(QString VibeHostName, int _bufferSize);
-    void VRPN_CALLBACK handleAnalog(vrpn_ANALOGCB analog);
+    void VRPN_CALLBACK getChData(vrpn_ANALOGCB analog);
     int bufferSize;
-    void stop();
 
 signals:
-    void gotAnalog(vrpn_ANALOGCB);
+    void gotSignal(double* chData);
+    void gotMetric(double metric);
 
 public slots:
 private:
     vrpn_Analog_Remote* VRPNAnalog;
-    QMutex mutex;
-    bool toStop;
+    bool onePerChannel;
 };
 
 #endif // VIBE_H

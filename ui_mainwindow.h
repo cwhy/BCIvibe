@@ -29,6 +29,7 @@ public:
     QGridLayout *gridLayout;
     QCustomPlot *signalPlot;
     QCustomPlot *thermPlot;
+    QCustomPlot *metricPlot;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -54,14 +55,17 @@ public:
         signalPlot = new QCustomPlot(centralWidget);
         signalPlot->setObjectName(QStringLiteral("signalPlot"));
         signalPlot->setMaximumSize(QSize(960, 960));
-
         gridLayout->addWidget(signalPlot, 0, 0, 1, 1);
 
         thermPlot = new QCustomPlot(centralWidget);
         thermPlot->setObjectName(QStringLiteral("thermPlot"));
         thermPlot->setMaximumSize(QSize(270, 540));
-
         gridLayout->addWidget(thermPlot, 0, 1, 1, 1);
+
+        metricPlot = new QCustomPlot(centralWidget);
+        metricPlot->setObjectName(QStringLiteral("metricPlot"));
+        metricPlot->setMaximumSize(QSize(960, 540));
+        gridLayout->addWidget(metricPlot, 1, 0, 1, 1);
 
         MainWindow->setCentralWidget(centralWidget);
         retranslateUi(MainWindow);

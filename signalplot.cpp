@@ -3,11 +3,9 @@
 
 SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
 {
-    vibe = new Vibe("Sinus@localhost", 8);
-    vibe->start();
     uiSignalPlot = _uiSignalPlot;
 
-    signalRange = 20;
+    timeRange = 20;
     channelNames << "F3" << "F4" << "C3" << "C4" << "P3" << "P4"
                  << "O1" << "O2";
     N_ch = channelNames.length();
@@ -19,7 +17,6 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
     setupPlot();
 
     lastKey = 0;
-    connect(vibe, SIGNAL(gotAnalog(vrpn_ANALOGCB)), this, SLOT(signalPlotSlot(vrpn_ANALOGCB)));
 }
 
 void SignalPlot::setupPlot()
@@ -29,8 +26,8 @@ void SignalPlot::setupPlot()
     for (int i=0;i<N_ch;i++)
     {
         QCPAxisRect *tmpRect = new QCPAxisRect(uiSignalPlot);
-        QCPGraph *tmpL;
-        QCPGraph *tmpD;
+        QCPGraph *tmpL;  // line
+        QCPGraph *tmpD;  // dot
         QColor tmpC;
         uiSignalPlot->plotLayout()->addElement(i, 0, tmpRect);
         uiSignalPlot->plotLayout()->setRowStretchFactor(i, 2);
@@ -88,31 +85,25 @@ void SignalPlot::setupPlot()
     timeAxis = tmpRect;
 }
 
-void SignalPlot::signalPlotSlot(vrpn_ANALOGCB chData)
+void SignalPlot::signalPlotSlot(double* chData)
 {
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     if (key-lastKey > 0.02) // at most add point every 10 ms
     {
         for (int i=0;i<N_ch;i++)
         {
-            double value = chData.channel[vibe->bufferSize*i];
+            double value = chData[i];
             lines[i]->addData(key, value);
-            lines[i]->removeDataBefore(key-signalRange);
+            lines[i]->removeDataBefore(key-timeRange);
             lines[i]->rescaleValueAxis(false);
             leadDots[i]->clearData();
             leadDots[i]->addData(key, value);
-            axes[i]->axis(QCPAxis::atBottom)->setRange(key+0.5, signalRange, Qt::AlignRight);
+            axes[i]->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
         }
     // make key axis range scroll with the data (at a constant range size of signalRange):
-        timeAxis->axis(QCPAxis::atBottom)->setRange(key+0.5, signalRange, Qt::AlignRight);
+        timeAxis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
         uiSignalPlot->replot();
         lastKey = key;
     }
 
-}
-
-void SignalPlot::stopVibe(){
-    vibe->stop();
-    vibe->quit();
-    delete vibe;
 }

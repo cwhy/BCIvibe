@@ -7,6 +7,7 @@
 #include "vibe.h"
 #include "signalplot.h"
 #include "thermometer.h"
+#include "metricplot.h"
 
 namespace Ui {
 class MainWindow;
@@ -30,7 +31,10 @@ private:
     QString demoName;
     SignalPlot* signalPlot;
     Thermometer* thermPlot;
+    MetricPlot* metricPlot;
 
+    Vibe* signalPort;
+    Vibe* metricPort;
     void mouseDoubleClickEvent(QMouseEvent *e);
 
 };

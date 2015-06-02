@@ -3,8 +3,6 @@
 
 Thermometer::Thermometer(QCustomPlot *_uiThermometer)
 {
-    vibe = new Vibe("therm@localhost", 1);
-    vibe->start();
     yRange = QCPRange(0, 1);
     uiThermometer = _uiThermometer;
     // uiThermometer->plotLayout()->clear();
@@ -36,27 +34,19 @@ Thermometer::Thermometer(QCustomPlot *_uiThermometer)
     uiThermometer->yAxis->setLabel("Workload");
     uiThermometer->yAxis->grid()->setSubGridVisible(true);
     lastKey = 0;
-    connect(vibe, SIGNAL(gotAnalog(vrpn_ANALOGCB)), this, SLOT(thermometerSlot(vrpn_ANALOGCB)));
 }
 
-void Thermometer::thermometerSlot(vrpn_ANALOGCB chData)
+void Thermometer::thermometerSlot(double metric)
 {
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     if (key-lastKey > 0.02) // at most add point every 10 ms
     {
-        double value = chData.channel[0];
         QVector<double> values;
-        values << value;
+        values << metric;
         therm->setData(ticks, values);
-        therm->setBrush(QBrush(colorMap->color(value, yRange)));
+        therm->setBrush(QBrush(colorMap->color(metric, yRange)));
 
         lastKey = key;
         uiThermometer->replot();
     }
-}
-
-void Thermometer::stopVibe(){
-    vibe->stop();
-    vibe->quit();
-    delete vibe;
 }
