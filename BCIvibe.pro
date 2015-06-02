@@ -5,12 +5,13 @@ TARGET = plot-examples
 TEMPLATE = app
 
 SOURCES += main.cpp \
-    mainwindow.cpp \
     qcustomplot/qcustomplot.cpp \
     vibe.cpp \
     signalplot.cpp \
     thermometer.cpp \
     metricplot.cpp \
+    signalplotwindow.cpp \
+    metricplotwindow.cpp
 
 INCLUDEPATH += $$PWD/vrpn/include
 DEPENDPATH += $$PWD/vrpn/include
@@ -20,14 +21,16 @@ CONFIG += console \
 
 
 HEADERS += \
-    mainwindow.h \
-    ui_mainwindow.h \
     qcustomplot/qcustomplot.h \
     vibe.h \
     signalplot.h \
     thermometer.h \
     channellocation.h \
     metricplot.h \
+    signalplotwindow.h \
+    metricplotwindow.h \
+    ui_metricplot.h \
+    ui_signalplot.h
 
 #FORMS += \
 #    mainwindow.ui

@@ -1,4 +1,4 @@
-#include "ui_mainwindow.h"
+#include "ui_signalplot.h"
 #include "signalplot.h"
 
 SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)

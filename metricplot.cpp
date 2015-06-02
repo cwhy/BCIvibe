@@ -1,4 +1,4 @@
-#include "ui_mainwindow.h"
+#include "ui_signalplot.h"
 #include "metricplot.h"
 
 MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot)
@@ -8,7 +8,7 @@ MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot)
     uiMetricPlot = _uiMetricPlot;
     uiMetricPlot->plotLayout()->clear();
     QCPAxisRect *tmpRect = new QCPAxisRect(uiMetricPlot);
-    uiMetricPlot->plotLayout()->addElement(1, 0, tmpRect);
+    uiMetricPlot->plotLayout()->addElement(0, 0, tmpRect);
     // tmpRect->axis(QCPAxis::atLeft)->setTickLabels(false);
     tmpRect->setAntialiased(false);
     tmpRect->axis(QCPAxis::atLeft)->setSubTickPen(Qt::NoPen);

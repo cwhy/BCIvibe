@@ -1,4 +1,4 @@
-#include "ui_mainwindow.h"
+#include "ui_signalplot.h"
 #include "thermometer.h"
 
 Thermometer::Thermometer(QCustomPlot *_uiThermometer)
