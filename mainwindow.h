@@ -18,7 +18,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow( Vibe *_metricPort, Vibe *_signalPort, QWidget *parent = 0);
+
     ~MainWindow();
 
     void setupDemo();

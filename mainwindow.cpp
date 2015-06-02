@@ -7,8 +7,8 @@
 #include <QMetaEnum>
 
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+MainWindow::MainWindow(Vibe *_metricPort, Vibe *_signalPort, QWidget *parent) :
+    QMainWindow(parent), metricPort(_metricPort), signalPort(_signalPort),
     ui(new Ui::MainWindow)
 {
     demoName = "Real Time Data Demo";
@@ -21,12 +21,6 @@ void MainWindow::setupDemo()
 
     setWindowTitle("BCIvibe: "+demoName);
 
-    // Set up VRPN connections
-    signalPort = new Vibe("Sinus@localhost", 8);
-    signalPort->start();
-
-    metricPort = new Vibe("therm@localhost", 1);
-    metricPort->start();
 
     // Connection VRPNsignals to GUI plots
     signalPlot = new SignalPlot(ui->signalPlot);
