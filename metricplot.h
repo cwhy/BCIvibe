@@ -26,6 +26,8 @@ private:
     double timeRange;
 
     QList<double> metrics;
+    void setUpAxis();
+    void setUpBackgroud(QString name, float TStart, float TEnd, const QColor color);
 };
 
 #endif // METRICPLOT_H

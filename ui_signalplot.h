@@ -25,7 +25,7 @@ public:
     {
         if (SignalPlotWindow->objectName().isEmpty())
             SignalPlotWindow->setObjectName(QStringLiteral("SignalPlotWindow"));
-        SignalPlotWindow->setStyleSheet(QStringLiteral("background-color:white;"));
+        // SignalPlotWindow->setStyleSheet(QStringLiteral("background-color:white;"));
 
         SignalPlotWindow->setGeometry(0,0,960,540);
         SignalPlotWindow->setWindowFlags( Qt::FramelessWindowHint );

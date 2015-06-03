@@ -26,7 +26,7 @@ public:
     {
         if (MetricPlotWindow->objectName().isEmpty())
             MetricPlotWindow->setObjectName(QStringLiteral("MetricPlotWindow"));
-        MetricPlotWindow->setStyleSheet(QStringLiteral("background-color:white;"));
+        // MetricPlotWindow->setStyleSheet(QStringLiteral("background-color:white;"));
         MetricPlotWindow->setGeometry(0,540,1920,540);
         MetricPlotWindow->setWindowFlags( Qt::FramelessWindowHint );
         centralWidget = new QWidget(MetricPlotWindow);
