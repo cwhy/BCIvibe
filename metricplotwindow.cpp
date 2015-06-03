@@ -35,11 +35,11 @@ void MetricPlotWindow::mouseDoubleClickEvent(QMouseEvent *e)
 {
     QWidget::mouseDoubleClickEvent(e);
     if((windowFlags() | Qt::FramelessWindowHint) == windowFlags()) {
-        qDebug() << windowFlags();
+        // qDebug() << windowFlags();
         setWindowFlags( windowFlags() & ~Qt::FramelessWindowHint );
         show();
     } else {
-        qDebug() << windowFlags() <<Qt::FramelessWindowHint;
+        // qDebug() << windowFlags() <<Qt::FramelessWindowHint;
         setWindowFlags( windowFlags() | Qt::FramelessWindowHint );
         show();
     }

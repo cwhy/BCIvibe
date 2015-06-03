@@ -6,13 +6,21 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
     uiSignalPlot = _uiSignalPlot;
 
     timeRange = 20;
-    channelNames << "F3" << "F4" << "C3" << "C4" << "P3" << "P4"
-                 << "O1" << "O2";
+    QFile channelNameFile("channelToShow.txt");
+    if (!channelNameFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        channelNames << "F3" << "F4" << "C3" << "C4" << "P3" << "P4"
+                     << "O1" << "O2";
+        qDebug() << "channelToShow.txt is not found";
+    } else {
+        QTextStream textStream(&channelNameFile);
+        while (!textStream.atEnd())
+            channelNames << textStream.readLine();
+    }
     N_ch = channelNames.length();
 
-    colours << QColor("cyan") << QColor("magenta") << QColor("red") <<
-               QColor("darkRed") << QColor("darkCyan") << QColor("darkMagenta") <<
-               QColor("green") << QColor("darkGreen") << QColor("yellow") <<
+    colours << QColor("cyan") << QColor("magenta") << QColor("yellow") <<
+               QColor("darkRed") << QColor("darkGreen") << QColor("darkMagenta") <<
+               QColor("green") << QColor("darkCyan") << QColor("red") <<
                QColor("blue");
     setupPlot();
 
@@ -100,7 +108,7 @@ void SignalPlot::signalPlotSlot(double* chData)
             leadDots[i]->addData(key, value);
             axes[i]->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
         }
-    // make key axis range scroll with the data (at a constant range size of signalRange):
+        // make key axis range scroll with the data (at a constant range size of signalRange):
         timeAxis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
         uiSignalPlot->replot();
         lastKey = key;
