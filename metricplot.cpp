@@ -4,7 +4,7 @@
 MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
 {
     yRange = QCPRange(0, 1);
-    timeRange = 600;
+    timeRange = 60*6;
     uiMetricPlot->plotLayout()->clear();
     setUpAxis();
 
@@ -34,8 +34,8 @@ void MetricPlot::setUpAxis()
     tmpRect->axis(QCPAxis::atLeft)->setRange(yRange);
     tmpRect->axis(QCPAxis::atBottom)->setTickLabelType(QCPAxis::ltDateTime);
     tmpRect->axis(QCPAxis::atBottom)->setDateTimeFormat("mm:ss");
-    tmpRect->axis(QCPAxis::atBottom)->setAutoTickStep(false);
-    tmpRect->axis(QCPAxis::atBottom)->setTickStep(int(timeRange/10));
+    tmpRect->axis(QCPAxis::atBottom)->setAutoTickStep(true);
+    // tmpRect->axis(QCPAxis::atBottom)->setTickStep(int(timeRange/10));
     tmpRect->axis(QCPAxis::atBottom)->setTickLength(0, 3);
     tmpRect->axis(QCPAxis::atBottom)->setVisible(true);
     tmpRect->axis(QCPAxis::atBottom)->setSubTickPen(Qt::NoPen);
@@ -44,9 +44,9 @@ void MetricPlot::setUpAxis()
     axis = tmpRect;
 
     // Set up special background colors
-    setUpBackgroud("lvl0", 0, 3*60, QColor("green").lighter(150));
-    setUpBackgroud("lvl1", 3*60, 6*60, QColor("yellow").lighter(140));
-    setUpBackgroud("lvl2", 6*60, 9*60, QColor("orange").lighter(130));
+    setUpBackgroud("lvl0", 0, 2*60, QColor("green").lighter(150));
+    setUpBackgroud("lvl1", 2*60, 4*60, QColor("yellow").lighter(140));
+    setUpBackgroud("lvl2", 4*60, 6*60, QColor("orange").lighter(130));
 
 }
 

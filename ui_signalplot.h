@@ -9,6 +9,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QScrollArea>
 #include <QtWidgets/QWidget>
 #include "qcustomplot/qcustomplot.h"
 
@@ -20,6 +21,7 @@ public:
     QWidget *centralWidget;
     QCustomPlot *signalPlot;
     QGridLayout *gridLayout;
+    QScrollArea * scrollArea;
 
     void setupUi(QMainWindow *SignalPlotWindow)
     {
@@ -34,13 +36,28 @@ public:
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
 
         gridLayout = new QGridLayout(centralWidget);
-        gridLayout->setSpacing(6);
+        // gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
 
         signalPlot = new QCustomPlot(centralWidget);
         signalPlot->setObjectName(QStringLiteral("signalPlot"));
-        gridLayout->addWidget(signalPlot);
+
+        QGridLayout* scrollLayout = new QGridLayout();
+        // scrollLayout->setContentsMargins(11, 11, 11, 11);
+        // scrollLayout->setSpacing(6);
+        // scrollLayout->addWidget(signalPlot);
+        signalPlot->setLayout(scrollLayout);
+
+        scrollArea = new QScrollArea(centralWidget);
+        // scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setFrameShape(QFrame::NoFrame);
+        scrollArea->setWidget(signalPlot);
+
+        gridLayout->addWidget(scrollArea);
+
+
 
         SignalPlotWindow->setCentralWidget(centralWidget);
         retranslateUi(SignalPlotWindow);

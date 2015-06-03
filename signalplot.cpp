@@ -8,7 +8,8 @@ SignalPlot::SignalPlot(QCustomPlot *_uiSignalPlot)
     timeRange = 20;
     QFile channelNameFile("channelToShow.txt");
     if (!channelNameFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-        channelNames << "F3" << "F4" << "C3" << "C4" << "P3" << "P4"
+        channelNames << "F3" << "F4" << "C3"
+                     << "C4" << "P3" << "P4"
                      << "O1" << "O2";
         qDebug() << "channelToShow.txt is not found";
     } else {
