@@ -3,8 +3,9 @@
 
 MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
 {
+    isPaused = false;
     yRange = QCPRange(0, 1);
-    yRangeInit = QCPRange(0.3, 0.7);
+    yRangeInit = QCPRange(0.36, 0.48);
     timeRange = 60*6;
     uiMetricPlot->plotLayout()->clear();
     setUpAxis();
@@ -77,43 +78,69 @@ void MetricPlot::setUpBackgroud(QString name, float TStart, float TEnd, const QC
 
 void MetricPlot::metricPlotSlot(double metric)
 {
+    static bool xaxisFix = false;
     const short smooth = 10;
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
+    key -= pauseFix;
     double value;
-    static bool xaxisFix = false;
-    if (metrics.length() < smooth){
-        if (metrics.length() == 0){
-            zeroKey = key;
-        }
-        metrics << metric;
-        value = metric;
-    } else{
-        metrics.removeFirst();
-        metrics << metric;
-        value = 0;
-        for (auto p: metrics){
-            value += p;
-        }
-        value /= smooth;
-        if (key-lastKey > 0.02) // at most add point every 10 ms
-        {
-            if (!xaxisFix){
-                xaxisFix = true;
-                axis->axis(QCPAxis::atBottom)->setRange(key-zeroKey, timeRange);
+    if (!isPaused){
+        if (metrics.length() < smooth){
+            if (metrics.length() == 0){
+                zeroKey = key;
+            }
+            metrics << metric;
+            value = metric;
+        } else{
+            metrics.removeFirst();
+            metrics << metric;
+            value = 0;
+            for (auto p: metrics){
+                value += p;
+            }
+            value /= smooth;
+            if (key-lastKey > 0.02) // at most add point every 10 ms
+            {
+                if (!xaxisFix){
+                    xaxisFix = true;
+                    axis->axis(QCPAxis::atBottom)->setRange(key-zeroKey, timeRange);
+                    uiMetricPlot->replot();
+                    // qDebug() << firstKey;
+                }
+                line->addData(key-zeroKey, value);
+                rescaleYAxis(value, 0.05);
+                leadDot->clearData();
+                leadDot->addData(key-zeroKey, value);
+                // axis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
                 uiMetricPlot->replot();
-                // qDebug() << firstKey;
+                lastKey = key;
             }
-            line->addData(key-zeroKey, value);
-            // line->removeDataBefore(key-timeRange);
-            if(value > yRangeInit.upper || value < yRangeInit.lower){
-                line->rescaleValueAxis(false);
-                line->valueAxis()->scaleRange(1.1, line->valueAxis()->range().center());
-            }
-            leadDot->clearData();
-            leadDot->addData(key-zeroKey, value);
-            // axis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
-            uiMetricPlot->replot();
-            lastKey = key;
         }
+    }
+}
+
+void MetricPlot::pauseToggle(){
+    static double pauseTime = 0;
+    double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
+    if(!isPaused){
+        pauseTime = key;
+        isPaused = true;
+    } else {
+        pauseFix += key - pauseTime;
+        isPaused = false;
+    }
+}
+
+void MetricPlot::rescaleYAxis(double value, float yPadding){
+    QCPAxis* yAxis = axis->axis(QCPAxis::atLeft);
+    if(value + yPadding > yRangeInit.upper &&
+            value + yPadding > yAxis->range().upper){
+
+        yAxis->setRangeUpper(value + yPadding);
+
+    } else if (value - yPadding < yRangeInit.lower &&
+               value - yPadding < yAxis->range().lower){
+
+        yAxis->setRangeLower(value - yPadding);
+
     }
 }

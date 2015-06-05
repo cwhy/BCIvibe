@@ -10,17 +10,19 @@ class MetricPlot : public QObject
 
 public:
     explicit MetricPlot(QCustomPlot *_uiMetricPlot);
+    void pauseToggle();
 
 private slots:
     void metricPlotSlot(double metric);
 
 private:
+    bool isPaused;
+    double pauseFix;
     QCustomPlot *uiMetricPlot;
     QCPAxisRect* timeAxis;
     QCPAxisRect* axis;
     QCPGraph* line;
     QCPGraph* leadDot;
-    double gameStartKey;
     double zeroKey;
     double lastKey;
     QCPRange yRange;
@@ -30,6 +32,7 @@ private:
     QList<double> metrics;
     void setUpAxis();
     void setUpBackgroud(QString name, float TStart, float TEnd, const QColor color);
+    void rescaleYAxis(double value, float yPadding);
 };
 
 #endif // METRICPLOT_H

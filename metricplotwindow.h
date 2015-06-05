@@ -34,6 +34,7 @@ private:
     MetricPlot* metricPlot;
 
     Vibe* metricPort;
+    void keyPressEvent(QKeyEvent *keyName);
     void mouseDoubleClickEvent(QMouseEvent *e);
 
 };

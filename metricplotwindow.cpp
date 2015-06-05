@@ -42,6 +42,14 @@ void MetricPlotWindow::mouseDoubleClickEvent(QMouseEvent *e)
     qDebug()<<"Doubleclicked!";
 }
 
+void MetricPlotWindow::keyPressEvent(QKeyEvent *keyEvent)
+{
+    if(keyEvent->key() == Qt::Key_Space){
+        metricPlot->pauseToggle();
+    }
+    qDebug() << "Paused!";
+}
+
 MetricPlotWindow::~MetricPlotWindow()
 {
 }
