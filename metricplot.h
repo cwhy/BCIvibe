@@ -24,6 +24,7 @@ private:
     double zeroKey;
     double lastKey;
     QCPRange yRange;
+    QCPRange yRangeInit;
     double timeRange;
 
     QList<double> metrics;

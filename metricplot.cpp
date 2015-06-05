@@ -4,12 +4,13 @@
 MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
 {
     yRange = QCPRange(0, 1);
+    yRangeInit = QCPRange(0.3, 0.7);
     timeRange = 60*6;
     uiMetricPlot->plotLayout()->clear();
     setUpAxis();
 
     line = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    QPen* linePen = new QPen(Qt::red);
+    QPen* linePen = new QPen(QColor(Qt::red).darker(140));
     linePen->setWidthF(2);
     line->setPen(*linePen);
 
@@ -29,7 +30,7 @@ void MetricPlot::setUpAxis()
     // tmpRect->axis(QCPAxis::atLeft)->setAutoTickCount(2);
     tmpRect->axis(QCPAxis::atLeft)->setLabel("Workload");
     tmpRect->axis(QCPAxis::atLeft)->setTickLength(0, 3);
-    tmpRect->axis(QCPAxis::atLeft)->setRange(yRange);
+    tmpRect->axis(QCPAxis::atLeft)->setRange(yRangeInit);
     tmpRect->axis(QCPAxis::atBottom)->setTickLabelType(QCPAxis::ltDateTime);
     tmpRect->axis(QCPAxis::atBottom)->setDateTimeFormat("mm:ss");
     tmpRect->axis(QCPAxis::atBottom)->setAutoTickStep(true);
@@ -42,9 +43,10 @@ void MetricPlot::setUpAxis()
     axis = tmpRect;
 
     // Set up special background colors
-    setUpBackgroud("lvl0", 0, 2*60, QColor("green").lighter(150));
-    setUpBackgroud("lvl1", 2*60, 4*60, QColor("yellow").lighter(140));
-    setUpBackgroud("lvl2", 4*60, 6*60, QColor("orange").lighter(130));
+    setUpBackgroud("lvl0", 0, 2*60, QColor(0,250,50,100));
+    setUpBackgroud("lvl1", 2*60, 4*60, QColor(250,250,0,150));
+    setUpBackgroud("lvl2", 4*60, 6*60, QColor(250,150,0,200));
+    uiMetricPlot->replot();
 
 }
 
@@ -65,8 +67,9 @@ void MetricPlot::setUpBackgroud(QString name, float TStart, float TEnd, const QC
     _background->bottomRight->setAxisRect(axis);
     _background->setClipToAxisRect(true);
 
-    _background->topLeft->setCoords(TStart,1);
-    _background->bottomRight->setCoords(TEnd,0);
+    // qDebug() << yRange.upper << yRange.lower;
+    _background->topLeft->setCoords(TStart,yRange.upper);
+    _background->bottomRight->setCoords(TEnd,yRange.lower);
 
     _background->setBrush(QBrush(color));
     _background->setPen(Qt::NoPen);
@@ -102,8 +105,10 @@ void MetricPlot::metricPlotSlot(double metric)
             }
             line->addData(key-zeroKey, value);
             // line->removeDataBefore(key-timeRange);
-            line->rescaleValueAxis(false);
-            line->valueAxis()->scaleRange(1.1, line->valueAxis()->range().center());
+            if(value > yRangeInit.upper || value < yRangeInit.lower){
+                line->rescaleValueAxis(false);
+                line->valueAxis()->scaleRange(1.1, line->valueAxis()->range().center());
+            }
             leadDot->clearData();
             leadDot->addData(key-zeroKey, value);
             // axis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
