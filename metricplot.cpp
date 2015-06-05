@@ -17,8 +17,6 @@ MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
     leadDot->setPen(QPen(Qt::black));
     leadDot->setLineStyle(QCPGraph::lsNone);
     leadDot->setScatterStyle(QCPScatterStyle::ssDisc);
-
-    uiMetricPlot->replot();
 }
 
 void MetricPlot::setUpAxis()
@@ -81,6 +79,9 @@ void MetricPlot::metricPlotSlot(double metric)
     double value;
     static bool xaxisFix = false;
     if (metrics.length() < smooth){
+        if (metrics.length() == 0){
+            zeroKey = key;
+        }
         metrics << metric;
         value = metric;
     } else{
@@ -95,14 +96,16 @@ void MetricPlot::metricPlotSlot(double metric)
         {
             if (!xaxisFix){
                 xaxisFix = true;
-                firstKey = key;
+                axis->axis(QCPAxis::atBottom)->setRange(key-zeroKey, timeRange);
+                uiMetricPlot->replot();
                 // qDebug() << firstKey;
             }
-            line->addData(key-firstKey, value);
+            line->addData(key-zeroKey, value);
             // line->removeDataBefore(key-timeRange);
-            // line->rescaleValueAxis(false);
+            line->rescaleValueAxis(false);
+            line->valueAxis()->scaleRange(1.1, line->valueAxis()->range().center());
             leadDot->clearData();
-            leadDot->addData(key-firstKey, value);
+            leadDot->addData(key-zeroKey, value);
             // axis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
             uiMetricPlot->replot();
             lastKey = key;

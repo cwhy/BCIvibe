@@ -1,10 +1,6 @@
 #include "metricplotwindow.h"
 #include "ui_metricplot.h"
 #include <QDebug>
-// #include <QDesktopWidget>
-// #include <QScreen>
-// #include <QMessageBox>
-// #include <QMetaEnum>
 
 
 MetricPlotWindow::MetricPlotWindow(Vibe *_metricPort, QWidget *parent) :

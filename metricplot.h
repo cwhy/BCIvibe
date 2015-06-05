@@ -20,7 +20,8 @@ private:
     QCPAxisRect* axis;
     QCPGraph* line;
     QCPGraph* leadDot;
-    double firstKey;
+    double gameStartKey;
+    double zeroKey;
     double lastKey;
     QCPRange yRange;
     double timeRange;

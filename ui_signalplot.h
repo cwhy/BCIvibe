@@ -44,8 +44,6 @@ public:
         signalPlot->setObjectName(QStringLiteral("signalPlot"));
 
         QGridLayout* scrollLayout = new QGridLayout();
-        // scrollLayout->setContentsMargins(11, 11, 11, 11);
-        // scrollLayout->setSpacing(6);
         // scrollLayout->addWidget(signalPlot);
         signalPlot->setLayout(scrollLayout);
 
