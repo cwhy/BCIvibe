@@ -10,42 +10,59 @@ MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
     timeRange = 60*6;
     uiMetricPlot->plotLayout()->clear();
     setUpAxis();
+    setUpPlots();
+}
 
+void MetricPlot::setUpPlots()
+{
     line = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    QPen* linePen = new QPen(QColor(Qt::red).darker(140));
+    QPen* linePen = new QPen(QColor(Qt::gray).lighter(100));
     linePen->setWidthF(2);
     line->setPen(*linePen);
+    line->setName("0.5 second window");
+
+    smoothLine = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
+    QPen* smoothLinePen = new QPen(QColor(Qt::red).darker(140));
+    smoothLinePen->setWidthF(2);
+    smoothLine->setPen(*smoothLinePen);
+    smoothLine->setName("15 seconds window");
 
     leadDot = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
     leadDot->setPen(QPen(Qt::black));
     leadDot->setLineStyle(QCPGraph::lsNone);
     leadDot->setScatterStyle(QCPScatterStyle::ssDisc);
+
+    QCPLegend *_legend = new QCPLegend;
+    axis->insetLayout()->addElement(_legend, Qt::AlignTop|Qt::AlignLeft);
+    _legend->setLayer("legend");
+    uiMetricPlot->setAutoAddPlottableToLegend(false);
+    _legend->addItem(new QCPPlottableLegendItem(_legend, line));
+    _legend->addItem(new QCPPlottableLegendItem(_legend, smoothLine));
+    _legend->setBorderPen(Qt::NoPen);
+    _legend->setBrush(QBrush(Qt::transparent));
 }
 
 void MetricPlot::setUpAxis()
 {
-    QCPAxisRect *tmpRect = new QCPAxisRect(uiMetricPlot);
-    uiMetricPlot->plotLayout()->addElement(0, 0, tmpRect);
-    // tmpRect->axis(QCPAxis::atLeft)->setTickLabels(false);
-    tmpRect->setAntialiased(false);
-    tmpRect->axis(QCPAxis::atLeft)->setSubTickPen(Qt::NoPen);
-    // tmpRect->axis(QCPAxis::atLeft)->setAutoTickCount(2);
-    tmpRect->axis(QCPAxis::atLeft)->setLabel("Workload");
-    tmpRect->axis(QCPAxis::atLeft)->setTickLength(0, 3);
-    tmpRect->axis(QCPAxis::atLeft)->setRange(yRangeInit);
-    tmpRect->axis(QCPAxis::atBottom)->setTickLabelType(QCPAxis::ltDateTime);
-    tmpRect->axis(QCPAxis::atBottom)->setDateTimeFormat("mm:ss");
-    tmpRect->axis(QCPAxis::atBottom)->setAutoTickStep(true);
+    QCPAxisRect *_rect = new QCPAxisRect(uiMetricPlot);
+    uiMetricPlot->plotLayout()->addElement(0, 0, _rect);
+    _rect->setAntialiased(false);
+    _rect->axis(QCPAxis::atLeft)->setSubTickPen(Qt::NoPen);
+    //  _rect->axis(QCPAxis::atLeft)->setLabel("Workload");
+    _rect->axis(QCPAxis::atLeft)->setTickLength(0, 3);
+    _rect->axis(QCPAxis::atLeft)->setRange(yRangeInit);
+    _rect->axis(QCPAxis::atBottom)->setTickLabelType(QCPAxis::ltDateTime);
+    _rect->axis(QCPAxis::atBottom)->setDateTimeFormat("mm:ss");
+    _rect->axis(QCPAxis::atBottom)->setAutoTickStep(true);
     // tmpRect->axis(QCPAxis::atBottom)->setTickStep(int(timeRange/10));
-    tmpRect->axis(QCPAxis::atBottom)->setTickLength(0, 3);
-    tmpRect->axis(QCPAxis::atBottom)->setVisible(true);
-    tmpRect->axis(QCPAxis::atBottom)->setSubTickPen(Qt::NoPen);
-    tmpRect->axis(QCPAxis::atBottom)->setRange(zeroKey, timeRange);
+    _rect->axis(QCPAxis::atBottom)->setTickLength(0, 3);
+    _rect->axis(QCPAxis::atBottom)->setVisible(true);
+    _rect->axis(QCPAxis::atBottom)->setSubTickPen(Qt::NoPen);
+    _rect->axis(QCPAxis::atBottom)->setRange(zeroKey, timeRange);
     // tmpRect->axis(QCPAxis::atBottom)->setTickLabelRotation(45);
-    axis = tmpRect;
 
+    axis = _rect;
     uiMetricPlot->replot();
-
 }
 
 void MetricPlot::setUpBackgroud(QString layerName, float TStart, float TEnd, const QColor color)
@@ -92,7 +109,8 @@ void MetricPlot::metricPlotSlot(double metric)
             value /= smooth;
             if (key-lastKey > 0.02) // at most add point every 10 ms
             {
-                line->addData(key-zeroKey, value);
+                line->addData(key-zeroKey, metric);
+                smoothLine->addData(key-zeroKey, value);
                 rescaleYAxis(value, 0.05);
                 leadDot->clearData();
                 leadDot->addData(key-zeroKey, value);
@@ -121,17 +139,18 @@ void MetricPlot::reInitialize(){
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     zeroKey = key - pauseFix;
     axis->axis(QCPAxis::atBottom)->setRange(0, timeRange);
-    line->clearData();
-    leadDot->clearData();
+    for(auto graph: axis->graphs()){
+        graph->clearData();
+    }
     // uiMetricPlot->clearItems();
 
     // Set up special background colors
     uiMetricPlot->layer("level");
     if (!uiMetricPlot->layer("level")){
         uiMetricPlot->addLayer("level", uiMetricPlot->layer("grid"),QCustomPlot::limBelow);
-        setUpBackgroud("level", 0, 2*60, QColor(0,250,50,100));
-        setUpBackgroud("level", 2*60, 4*60, QColor(250,250,0,150));
-        setUpBackgroud("level", 4*60, 6*60, QColor(250,150,0,200));
+        setUpBackgroud("level", 0, 2*60, QColor(0,255,0, 70));
+        setUpBackgroud("level", 2*60, 4*60, QColor(255,155,0, 100));
+        setUpBackgroud("level", 4*60, 6*60, QColor(222,41,16, 200));
     }
     uiMetricPlot->replot();
     isPaused = false;
@@ -148,6 +167,5 @@ void MetricPlot::rescaleYAxis(double value, double yPadding){
                value - yPadding < yAxis->range().lower){
 
         yAxis->setRangeLower(value - yPadding);
-
     }
 }

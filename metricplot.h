@@ -23,6 +23,7 @@ private:
     QCPAxisRect* timeAxis;
     QCPAxisRect* axis;
     QCPGraph* line;
+    QCPGraph* smoothLine;
     QCPGraph* leadDot;
     double zeroKey;
     double lastKey;
@@ -32,6 +33,7 @@ private:
 
     QList<double> metrics;
     void setUpAxis();
+    void setUpPlots();
     void setUpBackgroud(QString name, float TStart, float TEnd, const QColor color);
     void rescaleYAxis(double value, double yPadding);
 };
