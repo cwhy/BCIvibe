@@ -4,8 +4,9 @@
 MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
 {
     isPaused = false;
-    yRange = QCPRange(0, 1);
-    yRangeInit = QCPRange(0.36, 0.48);
+    zeroKey = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
+    yRange = QCPRange(0, 2);
+    yRangeInit = QCPRange(0.5, 1.5);
     timeRange = 60*6;
     uiMetricPlot->plotLayout()->clear();
     setUpAxis();
@@ -39,24 +40,19 @@ void MetricPlot::setUpAxis()
     tmpRect->axis(QCPAxis::atBottom)->setTickLength(0, 3);
     tmpRect->axis(QCPAxis::atBottom)->setVisible(true);
     tmpRect->axis(QCPAxis::atBottom)->setSubTickPen(Qt::NoPen);
-    tmpRect->axis(QCPAxis::atBottom)->setRange(0, timeRange);
+    tmpRect->axis(QCPAxis::atBottom)->setRange(zeroKey, timeRange);
     // tmpRect->axis(QCPAxis::atBottom)->setTickLabelRotation(45);
     axis = tmpRect;
 
-    // Set up special background colors
-    setUpBackgroud("lvl0", 0, 2*60, QColor(0,250,50,100));
-    setUpBackgroud("lvl1", 2*60, 4*60, QColor(250,250,0,150));
-    setUpBackgroud("lvl2", 4*60, 6*60, QColor(250,150,0,200));
     uiMetricPlot->replot();
 
 }
 
-void MetricPlot::setUpBackgroud(QString name, float TStart, float TEnd, const QColor color)
+void MetricPlot::setUpBackgroud(QString layerName, float TStart, float TEnd, const QColor color)
 {
     QCPItemRect *_background = new QCPItemRect(uiMetricPlot);
     uiMetricPlot->addItem(_background);
-    uiMetricPlot->addLayer(name, uiMetricPlot->layer("grid"),QCustomPlot::limBelow);
-    _background->setLayer(name);
+    _background->setLayer(layerName);
     _background->topLeft->setTypeX(QCPItemPosition::ptPlotCoords);
     _background->topLeft->setTypeY(QCPItemPosition::ptAxisRectRatio);
     _background->bottomRight->setTypeX(QCPItemPosition::ptPlotCoords);
@@ -78,16 +74,12 @@ void MetricPlot::setUpBackgroud(QString name, float TStart, float TEnd, const QC
 
 void MetricPlot::metricPlotSlot(double metric)
 {
-    static bool xaxisFix = false;
-    const short smooth = 10;
+    const short smooth = 30;
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     key -= pauseFix;
     double value;
     if (!isPaused){
         if (metrics.length() < smooth){
-            if (metrics.length() == 0){
-                zeroKey = key;
-            }
             metrics << metric;
             value = metric;
         } else{
@@ -100,12 +92,6 @@ void MetricPlot::metricPlotSlot(double metric)
             value /= smooth;
             if (key-lastKey > 0.02) // at most add point every 10 ms
             {
-                if (!xaxisFix){
-                    xaxisFix = true;
-                    axis->axis(QCPAxis::atBottom)->setRange(key-zeroKey, timeRange);
-                    uiMetricPlot->replot();
-                    // qDebug() << firstKey;
-                }
                 line->addData(key-zeroKey, value);
                 rescaleYAxis(value, 0.05);
                 leadDot->clearData();
@@ -130,7 +116,28 @@ void MetricPlot::pauseToggle(){
     }
 }
 
-void MetricPlot::rescaleYAxis(double value, float yPadding){
+void MetricPlot::reInitialize(){
+    isPaused = true;
+    double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
+    zeroKey = key - pauseFix;
+    axis->axis(QCPAxis::atBottom)->setRange(0, timeRange);
+    line->clearData();
+    leadDot->clearData();
+    // uiMetricPlot->clearItems();
+
+    // Set up special background colors
+    uiMetricPlot->layer("level");
+    if (!uiMetricPlot->layer("level")){
+        uiMetricPlot->addLayer("level", uiMetricPlot->layer("grid"),QCustomPlot::limBelow);
+        setUpBackgroud("level", 0, 2*60, QColor(0,250,50,100));
+        setUpBackgroud("level", 2*60, 4*60, QColor(250,250,0,150));
+        setUpBackgroud("level", 4*60, 6*60, QColor(250,150,0,200));
+    }
+    uiMetricPlot->replot();
+    isPaused = false;
+}
+
+void MetricPlot::rescaleYAxis(double value, double yPadding){
     QCPAxis* yAxis = axis->axis(QCPAxis::atLeft);
     if(value + yPadding > yRangeInit.upper &&
             value + yPadding > yAxis->range().upper){

@@ -11,6 +11,7 @@ class MetricPlot : public QObject
 public:
     explicit MetricPlot(QCustomPlot *_uiMetricPlot);
     void pauseToggle();
+    void reInitialize();
 
 private slots:
     void metricPlotSlot(double metric);
@@ -32,7 +33,7 @@ private:
     QList<double> metrics;
     void setUpAxis();
     void setUpBackgroud(QString name, float TStart, float TEnd, const QColor color);
-    void rescaleYAxis(double value, float yPadding);
+    void rescaleYAxis(double value, double yPadding);
 };
 
 #endif // METRICPLOT_H

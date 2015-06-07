@@ -1,10 +1,9 @@
 #include "ui_signalplot.h"
 #include "thermometer.h"
 
-Thermometer::Thermometer(QCustomPlot *_uiThermometer)
+Thermometer::Thermometer(QCustomPlot *_uiThermometer):uiThermometer(_uiThermometer)
 {
-    yRange = QCPRange(0, 1);
-    uiThermometer = _uiThermometer;
+    yRange = QCPRange(0, 2);
     // uiThermometer->plotLayout()->clear();
     therm = new QCPBars(uiThermometer->xAxis, uiThermometer->yAxis);
     colorMap = new QCPColorGradient(QCPColorGradient::gpJet);
