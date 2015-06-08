@@ -8,6 +8,18 @@ MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
     yRange = QCPRange(0, 2);
     yRangeInit = QCPRange(0.5, 1.5);
     timeRange = 60*6;
+    signalRate = 0.5;
+    smoothWindows << 4 << 30;
+    smoothDefault = smoothWindows.last();
+    QList<QColor> colorList = QList<QColor>() << QColor(Qt::lightGray) << QColor(Qt::darkRed) <<
+                                                 QColor("green") << QColor("darkCyan");
+    auto itrColor = colorList.begin();
+    colors = new QMap<short, QColor>;
+    for(short win: smoothWindows){
+        colors->insert(win, *(itrColor));
+        itrColor++;
+    }
+
     uiMetricPlot->plotLayout()->clear();
     setUpAxis();
     setUpPlots();
@@ -15,29 +27,34 @@ MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
 
 void MetricPlot::setUpPlots()
 {
-    line = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    QPen* linePen = new QPen(QColor(Qt::gray).lighter(100));
-    linePen->setWidthF(2);
-    line->setPen(*linePen);
-    line->setName("0.5 second window");
 
-    smoothLine = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    QPen* smoothLinePen = new QPen(QColor(Qt::red).darker(140));
-    smoothLinePen->setWidthF(2);
-    smoothLine->setPen(*smoothLinePen);
-    smoothLine->setName("15 seconds window");
+    lines = new QMap<short, QCPGraph*>;
+    leadDots = new QMap<short, QCPGraph*>;
+    for(short win: smoothWindows){
+        QCPGraph* _line;
+        _line = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
+        QPen linePen = QPen(colors->value(win));
+        linePen.setWidthF(2);
+        _line->setPen(linePen);
+        _line->setName(QString("%1 second window").arg(int(signalRate*win)));
+        lines->insert(win, _line);
 
-    leadDot = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    leadDot->setPen(QPen(Qt::black));
-    leadDot->setLineStyle(QCPGraph::lsNone);
-    leadDot->setScatterStyle(QCPScatterStyle::ssDisc);
+        QCPGraph* _leadDot;
+        _leadDot = uiMetricPlot->addGraph(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
+        _leadDot->setPen(QPen(colors->value(win)));
+        _leadDot->setLineStyle(QCPGraph::lsNone);
+        _leadDot->setScatterStyle(QCPScatterStyle::ssDisc);
+        leadDots->insert(win, _leadDot);
+    }
+    (*leadDots)[smoothDefault]->setPen(QPen(Qt::black));
 
     QCPLegend *_legend = new QCPLegend;
     axis->insetLayout()->addElement(_legend, Qt::AlignTop|Qt::AlignLeft);
     _legend->setLayer("legend");
     uiMetricPlot->setAutoAddPlottableToLegend(false);
-    _legend->addItem(new QCPPlottableLegendItem(_legend, line));
-    _legend->addItem(new QCPPlottableLegendItem(_legend, smoothLine));
+    for(short win: smoothWindows){
+        _legend->addItem(new QCPPlottableLegendItem(_legend, lines->value(win)));
+    }
     _legend->setBorderPen(Qt::NoPen);
     _legend->setBrush(QBrush(Qt::transparent));
 }
@@ -91,33 +108,34 @@ void MetricPlot::setUpBackgroud(QString layerName, float TStart, float TEnd, con
 
 void MetricPlot::metricPlotSlot(double metric)
 {
-    const short smooth = 30;
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
+    static QList<double> metrics;
     key -= pauseFix;
-    double value;
+    QMap<short, double> mSmoothed;
     if (!isPaused){
-        if (metrics.length() < smooth){
+        if (key-lastKey > 0.02) // at most add point every 10 ms
+        {
             metrics << metric;
-            value = metric;
-        } else{
-            metrics.removeFirst();
-            metrics << metric;
-            value = 0;
-            for (auto p: metrics){
-                value += p;
+            int mLen = metrics.length();
+            if (mLen > timeRange){
+                metrics.removeFirst();
             }
-            value /= smooth;
-            if (key-lastKey > 0.02) // at most add point every 10 ms
-            {
-                line->addData(key-zeroKey, metric);
-                smoothLine->addData(key-zeroKey, value);
-                rescaleYAxis(value, 0.05);
-                leadDot->clearData();
-                leadDot->addData(key-zeroKey, value);
-                // axis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
-                uiMetricPlot->replot();
-                lastKey = key;
+            for(short win: smoothWindows){
+                mSmoothed[win] = 0;
+                for (int i=qMax(0, mLen-win); i<mLen; i++){
+                    mSmoothed[win] += metrics[i];
+                }
+                mSmoothed[win] /= qMin(int(win), mLen);
             }
+            for(short win: smoothWindows){
+                lines->value(win)->addData(key-zeroKey, mSmoothed.value(win));
+                leadDots->value(win)->clearData();
+                leadDots->value(win)->addData(key-zeroKey, mSmoothed.value(win));
+            }
+            rescaleYAxis(mSmoothed.value(smoothDefault), 0.05);
+            // axis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
+            uiMetricPlot->replot();
+            lastKey = key;
         }
     }
 }

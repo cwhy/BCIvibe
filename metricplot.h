@@ -22,16 +22,19 @@ private:
     QCustomPlot *uiMetricPlot;
     QCPAxisRect* timeAxis;
     QCPAxisRect* axis;
-    QCPGraph* line;
-    QCPGraph* smoothLine;
-    QCPGraph* leadDot;
+
+    QMap<short, QCPGraph*>* lines;
+    QMap<short, QCPGraph*>* leadDots;
+    QMap<short, QColor>* colors;
+    double signalRate;
     double zeroKey;
     double lastKey;
     QCPRange yRange;
     QCPRange yRangeInit;
     double timeRange;
 
-    QList<double> metrics;
+    QList<short> smoothWindows;
+    short smoothDefault;
     void setUpAxis();
     void setUpPlots();
     void setUpBackgroud(QString name, float TStart, float TEnd, const QColor color);
