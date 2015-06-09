@@ -1,7 +1,8 @@
 #include "ui_signalplot.h"
 #include "metricplot.h"
 
-MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
+MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):
+    uiMetricPlot(_uiMetricPlot)
 {
     isPaused = false;
     zeroKey = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
@@ -11,8 +12,12 @@ MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
     signalRate = 0.5;
     smoothWindows << 4 << 30;
     smoothDefault = smoothWindows.last();
-    QList<QColor> colorList = QList<QColor>() << QColor(Qt::lightGray) << QColor(Qt::darkRed) <<
-                                                 QColor("green") << QColor("darkCyan");
+    levels << Level(0,    2*60, QColor(0,255,0, 70), "lvl1")
+           << Level(2*60, 4*60, QColor(255,155,0, 100), "lvl2")
+           << Level(4*60, 6*60, QColor(222,41,16, 200), "lvl3");
+    QList<QColor> colorList = QList<QColor>()
+                            << QColor(Qt::lightGray) << QColor(Qt::darkRed)
+                            << QColor("green") << QColor("darkCyan");
     auto itrColor = colorList.begin();
     colors = new QMap<short, QColor>;
     for(short win: smoothWindows){
@@ -23,6 +28,7 @@ MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):uiMetricPlot(_uiMetricPlot)
     uiMetricPlot->plotLayout()->clear();
     setUpAxis();
     setUpPlots();
+    setUpLevels();
 }
 
 void MetricPlot::setUpPlots()
@@ -110,10 +116,18 @@ void MetricPlot::metricPlotSlot(double metric)
             }
             rescaleYAxis(mSmoothed.value(smoothDefault), 0.05);
             // axis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
+
+
             uiMetricPlot->replot();
             lastKey = key;
         }
     }
+}
+
+
+void Level::updateBackground(QList<double>& metrics)
+{
+
 }
 
 void MetricPlot::pauseToggle(){
@@ -131,7 +145,6 @@ void MetricPlot::pauseToggle(){
 void MetricPlot::reInitialize(){
     isPaused = true;
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
-    zeroKey = key - pauseFix;
     axis->axis(QCPAxis::atBottom)->setRange(0, timeRange);
     for(auto graph: axis->graphs()){
         graph->clearData();
@@ -139,14 +152,13 @@ void MetricPlot::reInitialize(){
     // uiMetricPlot->clearItems();
 
     // Set up special background colors
-    uiMetricPlot->layer("level");
-    if (!uiMetricPlot->layer("level")){
-        uiMetricPlot->addLayer("level", uiMetricPlot->layer("grid"),QCustomPlot::limBelow);
-        setUpBackgroud("lvl1", "level", 0, 2*60, QColor(0,255,0, 70));
-        setUpBackgroud("lvl2", "level", 2*60, 4*60, QColor(255,155,0, 100));
-        setUpBackgroud("lvl3", "level", 4*60, 6*60, QColor(222,41,16, 200));
+    if (zeroKey==0){
+        for (auto l: levels){
+            uiMetricPlot->addItem(l.background);
+        }
     }
     uiMetricPlot->replot();
+    zeroKey = key - pauseFix;
     isPaused = false;
 }
 
@@ -164,27 +176,40 @@ void MetricPlot::rescaleYAxis(double value, double yPadding){
     }
 }
 
-void MetricPlot::setUpBackgroud(QString name, QString layerName, float TStart, float TEnd, const QColor color)
+void Level::setUpBackgroud(QCPAxisRect*axis, QString layerName)
 {
-    QCPItemRect *_background = new QCPItemRect(uiMetricPlot);
-    uiMetricPlot->addItem(_background);
-    _background->setLayer(layerName);
-    _background->topLeft->setTypeX(QCPItemPosition::ptPlotCoords);
-    _background->topLeft->setTypeY(QCPItemPosition::ptAxisRectRatio);
-    _background->bottomRight->setTypeX(QCPItemPosition::ptPlotCoords);
-    _background->bottomRight->setTypeY(QCPItemPosition::ptAxisRectRatio);
+    background->setLayer(layerName);
+    background->topLeft->setTypeX(QCPItemPosition::ptPlotCoords);
+    background->topLeft->setTypeY(QCPItemPosition::ptAxisRectRatio);
+    background->bottomRight->setTypeX(QCPItemPosition::ptPlotCoords);
+    background->bottomRight->setTypeY(QCPItemPosition::ptAxisRectRatio);
 
-    _background->topLeft->setAxes(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    _background->bottomRight->setAxes(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    _background->topLeft->setAxisRect(axis);
-    _background->bottomRight->setAxisRect(axis);
-    _background->setClipToAxisRect(true);
+    background->topLeft->setAxes(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
+    background->bottomRight->setAxes(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
+    background->topLeft->setAxisRect(axis);
+    background->bottomRight->setAxisRect(axis);
+    background->setClipToAxisRect(true);
 
     // qDebug() << yRange.upper << yRange.lower;
-    _background->topLeft->setCoords(TStart,yRange.upper);
-    _background->bottomRight->setCoords(TEnd,yRange.lower);
+    background->topLeft->setCoords(tStart, yMax);
+    background->bottomRight->setCoords(tEnd, yMin);
 
-    _background->setBrush(QBrush(color));
-    _background->setPen(Qt::NoPen);
-   levels[name] = _background;
+    background->setBrush(QBrush(color));
+    background->setPen(Qt::NoPen);
+}
+
+Level::Level(float _tS, float _tE, QColor _c, QString _n):
+    tStart(_tS), tEnd(_tE), color(_c), name(_n)
+{
+}
+
+void MetricPlot::setUpLevels(){
+    uiMetricPlot->layer("levels");
+    uiMetricPlot->addLayer("levels", uiMetricPlot->layer("grid"), QCustomPlot::limBelow);
+    for (auto l: levels){
+        l.yMax = yRange.upper;
+        l.yMin = yRange.lower;
+        l.background = new QCPItemRect(uiMetricPlot);
+        l.setUpBackgroud(axis, "levels");
+    }
 }

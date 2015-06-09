@@ -4,6 +4,22 @@
 #include <QObject>
 #include "qcustomplot/qcustomplot.h"
 
+class Level {
+
+public:
+    explicit Level(float _tS, float _tE, QColor _c, QString _n);
+    void setUpBackgroud(QCPAxisRect *axis, QString layerName);
+    QCPItemRect *background;
+    double yMax;
+    double yMin;
+private:
+    void updateBackground(QList<double>& metrics);
+    const double tStart;
+    const double tEnd;
+    const QColor color;
+    const QString name;
+};
+
 class MetricPlot : public QObject
 {
     Q_OBJECT
@@ -37,10 +53,10 @@ private:
     double timeRange;
 
 
-    QMap<QString, QCPItemRect*> levels;
+    QList<Level> levels;
     void setUpAxis();
     void setUpPlots();
-    void setUpBackgroud(QString name, QString layerName, float TStart, float TEnd, const QColor color);
+    void setUpLevels();
     void rescaleYAxis(double value, double yPadding);
 };
 
