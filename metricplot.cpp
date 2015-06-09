@@ -82,29 +82,6 @@ void MetricPlot::setUpAxis()
     uiMetricPlot->replot();
 }
 
-void MetricPlot::setUpBackgroud(QString layerName, float TStart, float TEnd, const QColor color)
-{
-    QCPItemRect *_background = new QCPItemRect(uiMetricPlot);
-    uiMetricPlot->addItem(_background);
-    _background->setLayer(layerName);
-    _background->topLeft->setTypeX(QCPItemPosition::ptPlotCoords);
-    _background->topLeft->setTypeY(QCPItemPosition::ptAxisRectRatio);
-    _background->bottomRight->setTypeX(QCPItemPosition::ptPlotCoords);
-    _background->bottomRight->setTypeY(QCPItemPosition::ptAxisRectRatio);
-
-    _background->topLeft->setAxes(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    _background->bottomRight->setAxes(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
-    _background->topLeft->setAxisRect(axis);
-    _background->bottomRight->setAxisRect(axis);
-    _background->setClipToAxisRect(true);
-
-    // qDebug() << yRange.upper << yRange.lower;
-    _background->topLeft->setCoords(TStart,yRange.upper);
-    _background->bottomRight->setCoords(TEnd,yRange.lower);
-
-    _background->setBrush(QBrush(color));
-    _background->setPen(Qt::NoPen);
-}
 
 void MetricPlot::metricPlotSlot(double metric)
 {
@@ -117,8 +94,9 @@ void MetricPlot::metricPlotSlot(double metric)
         {
             metrics << metric;
             int mLen = metrics.length();
-            if (mLen > timeRange){
+            if (mLen > timeRange*signalRate){
                 metrics.removeFirst();
+                mLen = timeRange*signalRate;
             }
             for(short win: smoothWindows){
                 mSmoothed[win] = 0;
@@ -126,8 +104,6 @@ void MetricPlot::metricPlotSlot(double metric)
                     mSmoothed[win] += metrics[i];
                 }
                 mSmoothed[win] /= qMin(int(win), mLen);
-            }
-            for(short win: smoothWindows){
                 lines->value(win)->addData(key-zeroKey, mSmoothed.value(win));
                 leadDots->value(win)->clearData();
                 leadDots->value(win)->addData(key-zeroKey, mSmoothed.value(win));
@@ -166,9 +142,9 @@ void MetricPlot::reInitialize(){
     uiMetricPlot->layer("level");
     if (!uiMetricPlot->layer("level")){
         uiMetricPlot->addLayer("level", uiMetricPlot->layer("grid"),QCustomPlot::limBelow);
-        setUpBackgroud("level", 0, 2*60, QColor(0,255,0, 70));
-        setUpBackgroud("level", 2*60, 4*60, QColor(255,155,0, 100));
-        setUpBackgroud("level", 4*60, 6*60, QColor(222,41,16, 200));
+        setUpBackgroud("lvl1", "level", 0, 2*60, QColor(0,255,0, 70));
+        setUpBackgroud("lvl2", "level", 2*60, 4*60, QColor(255,155,0, 100));
+        setUpBackgroud("lvl3", "level", 4*60, 6*60, QColor(222,41,16, 200));
     }
     uiMetricPlot->replot();
     isPaused = false;
@@ -186,4 +162,29 @@ void MetricPlot::rescaleYAxis(double value, double yPadding){
 
         yAxis->setRangeLower(value - yPadding);
     }
+}
+
+void MetricPlot::setUpBackgroud(QString name, QString layerName, float TStart, float TEnd, const QColor color)
+{
+    QCPItemRect *_background = new QCPItemRect(uiMetricPlot);
+    uiMetricPlot->addItem(_background);
+    _background->setLayer(layerName);
+    _background->topLeft->setTypeX(QCPItemPosition::ptPlotCoords);
+    _background->topLeft->setTypeY(QCPItemPosition::ptAxisRectRatio);
+    _background->bottomRight->setTypeX(QCPItemPosition::ptPlotCoords);
+    _background->bottomRight->setTypeY(QCPItemPosition::ptAxisRectRatio);
+
+    _background->topLeft->setAxes(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
+    _background->bottomRight->setAxes(axis->axis(QCPAxis::atBottom), axis->axis(QCPAxis::atLeft));
+    _background->topLeft->setAxisRect(axis);
+    _background->bottomRight->setAxisRect(axis);
+    _background->setClipToAxisRect(true);
+
+    // qDebug() << yRange.upper << yRange.lower;
+    _background->topLeft->setCoords(TStart,yRange.upper);
+    _background->bottomRight->setCoords(TEnd,yRange.lower);
+
+    _background->setBrush(QBrush(color));
+    _background->setPen(Qt::NoPen);
+   levels[name] = _background;
 }

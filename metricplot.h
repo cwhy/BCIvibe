@@ -23,9 +23,12 @@ private:
     QCPAxisRect* timeAxis;
     QCPAxisRect* axis;
 
+    QList<short> smoothWindows;
     QMap<short, QCPGraph*>* lines;
     QMap<short, QCPGraph*>* leadDots;
     QMap<short, QColor>* colors;
+    short smoothDefault;
+
     double signalRate;
     double zeroKey;
     double lastKey;
@@ -33,11 +36,11 @@ private:
     QCPRange yRangeInit;
     double timeRange;
 
-    QList<short> smoothWindows;
-    short smoothDefault;
+
+    QMap<QString, QCPItemRect*> levels;
     void setUpAxis();
     void setUpPlots();
-    void setUpBackgroud(QString name, float TStart, float TEnd, const QColor color);
+    void setUpBackgroud(QString name, QString layerName, float TStart, float TEnd, const QColor color);
     void rescaleYAxis(double value, double yPadding);
 };
 
