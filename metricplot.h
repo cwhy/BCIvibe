@@ -9,11 +9,14 @@ class Level {
 public:
     explicit Level(float _tS, float _tE, QColor _c, QString _n);
     void setUpBackgroud(QCPAxisRect *axis, QString layerName);
+    void setUpFinishLine(QCPAxisRect *axis);
+    void updateBackground(QList<double>& metrics, int mLen, double t);
     QCPItemRect *background;
+    QCPItemLine *finishLine;
     double yMax;
     double yMin;
+    double signalRate;
 private:
-    void updateBackground(QList<double>& metrics);
     const double tStart;
     const double tEnd;
     const QColor color;
