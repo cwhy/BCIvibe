@@ -96,14 +96,16 @@ void MetricPlot::metricPlotSlot(double metric)
 {
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     static QList<double> metrics;
+    static QList<double> defaultMetrics;
     double t = key - pauseFix - zeroKey;
     QMap<short, double> mSmoothed;
     if (!isPaused){
         metrics << metric;
         int mLen = metrics.length();
-        if (mLen > timeRange*signalRate){
+        if (mLen > timeRange/signalRate){
             metrics.removeFirst();
-            mLen = timeRange*signalRate;
+            defaultMetrics.removeFirst();
+            mLen = timeRange/signalRate;
         }
         for (const short& win: smoothWindows){
             mSmoothed[win] = 0;
@@ -115,8 +117,11 @@ void MetricPlot::metricPlotSlot(double metric)
             leadDots->value(win)->addData(t, mSmoothed.value(win));
             lines->value(win)->addData(t, mSmoothed.value(win));
         }
-        for (auto& l: levels){
-            l.updateBackground(metrics, mLen, t);
+        defaultMetrics << mSmoothed.value(smoothDefault);
+        if (zeroKey!=0){
+            for (auto& l: levels){
+                l.updateBackground(defaultMetrics, t);
+            }
         }
         rescaleYAxis(mSmoothed.value(smoothDefault), 0.05);
         // axis->axis(QCPAxis::atBottom)->setRange(key+0.5, timeRange, Qt::AlignRight);
@@ -130,12 +135,13 @@ void MetricPlot::metricPlotSlot(double metric)
 }
 
 
-void Level::updateBackground(QList<double>& metrics, int mLen, double t)
+void Level::updateBackground(QList<double>& metrics, double t)
 {
     if ((t > tStart) && (t < tEnd)){
+        int mLen = metrics.length();
         double aveLevel = 0;
-        double win = signalRate * (tEnd - tStart);
-        double mStart = qMax(signalRate * tStart, mLen-win);
+        double tLevel = (t - tStart)/signalRate;
+        int mStart = qMax(0, int(mLen-tLevel));
         for (int i=mStart; i<mLen; i++){
             aveLevel += metrics[i];
         }

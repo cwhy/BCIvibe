@@ -10,7 +10,7 @@ public:
     explicit Level(float _tS, float _tE, QColor _c, QString _n);
     void setUpBackgroud(QCPAxisRect *axis, QString layerName);
     void setUpFinishLine(QCPAxisRect *axis);
-    void updateBackground(QList<double>& metrics, int mLen, double t);
+    void updateBackground(QList<double>& metrics, double t);
     QCPItemRect *background;
     QCPItemLine *finishLine;
     double yMax;
