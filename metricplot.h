@@ -11,6 +11,7 @@ public:
     void setUpBackgroud(QCPAxisRect *axis, QString layerName);
     void setUpFinishLine(QCPAxisRect *axis);
     void updateBackground(QList<double>& metrics, double t);
+    void resetBackground();
     QCPItemRect *background;
     QCPItemLine *finishLine;
     double yMax;

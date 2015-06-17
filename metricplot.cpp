@@ -10,7 +10,7 @@ MetricPlot::MetricPlot(QCustomPlot *_uiMetricPlot):
     zeroKey = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     yRange = QCPRange(0, 2);
     yRangeInit = QCPRange(0.5, 1.5);
-    timeRange = 60*6;
+    timeRange = 6*60;
     signalRate = 0.5;
     smoothWindows << 4 << 30;
     smoothDefault = smoothWindows.last();
@@ -99,13 +99,17 @@ void MetricPlot::metricPlotSlot(double metric)
     static QList<double> defaultMetrics;
     double t = key - pauseFix - zeroKey;
     QMap<short, double> mSmoothed;
+    if (t >= timeRange){
+        isPaused = true;
+    }
+
     if (!isPaused){
         metrics << metric;
         int mLen = metrics.length();
         if (mLen > timeRange/signalRate){
             metrics.removeFirst();
             defaultMetrics.removeFirst();
-            mLen = timeRange/signalRate;
+            mLen = int(timeRange/signalRate);
         }
         for (const short& win: smoothWindows){
             mSmoothed[win] = 0;
@@ -151,6 +155,12 @@ void Level::updateBackground(QList<double>& metrics, double t)
     }
 }
 
+void Level::resetBackground()
+{
+    background->topLeft->setCoords(tStart, yMin);
+    background->bottomRight->setCoords(tEnd, yMin);
+}
+
 void MetricPlot::pauseToggle(){
     static double pauseTime = 0;
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
@@ -173,10 +183,12 @@ void MetricPlot::reInitialize(){
     // uiMetricPlot->clearItems();
 
     // Set up special background colors
-    if (zeroKey==0){
-        for (const auto& l: levels){
+    for (auto& l: levels){
+        if (zeroKey==0){
             uiMetricPlot->addItem(l.background);
             uiMetricPlot->addItem(l.finishLine);
+        } else{
+            l.resetBackground();
         }
     }
     uiMetricPlot->replot();
